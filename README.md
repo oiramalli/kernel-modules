@@ -1,5 +1,5 @@
-# so1p1
-Sistemas Operativos 1 - Proyecto 1 
+# Sistemas Operativos 2 | Grupo 18
+Sistemas Operativos 2 - Práctica 1 
 
 
 ---------------Sever-------------
