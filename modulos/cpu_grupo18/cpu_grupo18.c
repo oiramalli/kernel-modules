@@ -24,7 +24,7 @@ static int cpu_g18_main(struct seq_file *m, void *v)
 	for_each_process(procesos)
 	{
 		char *estado = procesos->state == -1 ? "Inejecutable" : procesos->state == 0 ? "Ejecutable" : "Detenido";
-		seq_printf(m, "PID: %d\n\tNombre: %s\n\tUsuario: %d\n\tEstado: %s(%ld)\n", procesos->pid, procesos->comm, procesos->cred,  estado, procesos->state);
+		seq_printf(m, "PID: %d\n\tNombre: %s\n\tUsuario: %d\n\tEstado: %s(%ld)\n", procesos->pid, procesos->comm, procesos->cred->euid,  estado, procesos->state);
 		++process_counter;
 	}
 	seq_printf(m, "Número de procesos: %zu\n", process_counter);
