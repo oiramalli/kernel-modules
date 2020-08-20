@@ -13,7 +13,7 @@
 #include <linux/mm.h>
 #include <linux/swap.h>
 
-/*
+
 static int cpu_g18_main(struct seq_file *m, void *v)
 {
 	struct task_struct *procesos;
@@ -27,7 +27,7 @@ static int cpu_g18_main(struct seq_file *m, void *v)
 	seq_printf(m, "Número de procesos: %zu\n", process_counter);
 	return 0;
 }
-*/
+
 /*
 // Método auxiliar para la lectura
 static int abrir_proceso_cpu(struct inode *inode, struct file *file)
@@ -63,7 +63,7 @@ void cleanup_module(void)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/*
 static int open_action(struct seq_file *m, void *v) {
     struct task_struct *task;
 
@@ -77,7 +77,7 @@ static int open_action(struct seq_file *m, void *v) {
 
     return 0;
 }
-
+*/
 
 
 ssize_t write_proc(struct file *filp, const char *buf, size_t count, loff_t *offp) {
@@ -86,8 +86,8 @@ ssize_t write_proc(struct file *filp, const char *buf, size_t count, loff_t *off
 
 
 int open_proc(struct inode *inode, struct file *file) {
-    return single_open(file, open_action, NULL);
-	//return single_open(file, cpu_g18_main, NULL);
+    //return single_open(file, open_action, NULL);
+	return single_open(file, cpu_g18_main, NULL);
 }
 
 static struct file_operations proc_fops = {
