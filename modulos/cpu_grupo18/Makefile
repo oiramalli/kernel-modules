@@ -4,7 +4,7 @@ all:
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 test:
-	dmesg -C
-	insmod cpu_grupo18.ko
-	rmmod cpu_grupo18.ko
+	sudo dmesg -C
+	sudo insmod cpu_grupo18.ko
+	sudo rmmod cpu_grupo18.ko
 	dmesg
