@@ -12,6 +12,9 @@
 #include <linux/sysinfo.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
+#include <linux/user_namespace.h>
+#include <linux/cred.h>
+
 
 
 static int cpu_g18_main(struct seq_file *m, void *v)
@@ -21,7 +24,7 @@ static int cpu_g18_main(struct seq_file *m, void *v)
 	for_each_process(procesos)
 	{
 		char *estado = procesos->state == -1 ? "Inejecutable" : procesos->state == 0 ? "Ejecutable" : "Detenido";
-		seq_printf(m, "PID: %d\n\tNombre: %s\n\tUsuario: %d-%d\n\tEstado: %s(%ld)\n", procesos->pid, procesos->comm, procesos->real_cred->uid, procesos->cred->uid,  estado, procesos->state);
+		seq_printf(m, "PID: %d\n\tNombre: %s\n\tUsuario: %d\n\tEstado: %s(%ld)\n", procesos->pid, procesos->comm, procesos->cred->user_ns->uid_map.extent->first,  estado, procesos->state);
 		++process_counter;
 	}
 	seq_printf(m, "Número de procesos: %zu\n", process_counter);
