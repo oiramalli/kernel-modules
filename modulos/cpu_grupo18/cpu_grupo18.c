@@ -5,6 +5,15 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 
+#include <linux/init.h>
+#include <linux/uaccess.h>
+#include <linux/slab.h>
+#include <linux/fs.h>
+#include <linux/sysinfo.h>
+#include <linux/mm.h>
+#include <linux/swap.h>
+
+/*
 static int cpu_g18_main(struct seq_file *m, void *v)
 {
 	struct task_struct *procesos;
@@ -18,7 +27,7 @@ static int cpu_g18_main(struct seq_file *m, void *v)
 	seq_printf(m, "Número de procesos: %zu\n", process_counter);
 	return 0;
 }
-
+*/
 /*
 // Método auxiliar para la lectura
 static int abrir_proceso_cpu(struct inode *inode, struct file *file)
@@ -54,7 +63,7 @@ void cleanup_module(void)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
+
 static int open_action(struct seq_file *m, void *v) {
     struct task_struct *task;
 
@@ -68,23 +77,23 @@ static int open_action(struct seq_file *m, void *v) {
 
     return 0;
 }
-*/
 
-/*
+
+
 ssize_t write_proc(struct file *filp, const char *buf, size_t count, loff_t *offp) {
     return 0;
 }
-*/
 
-int open_proc_cpu(struct inode *inode, struct file *file) {
-    //return single_open(file, open_action, NULL);
-	return single_open(file, cpu_g18_main, NULL);
+
+int open_proc(struct inode *inode, struct file *file) {
+    return single_open(file, open_action, NULL);
+	//return single_open(file, cpu_g18_main, NULL);
 }
 
 static struct file_operations proc_fops = {
     read : seq_read,
     write : write_proc,
-    open : open_proc_cpu,
+    open : open_proc,
     release : single_release,
     llseek : seq_lseek
 };
@@ -93,7 +102,7 @@ static int __init cpu_grupo18_init(void) {
     printk(KERN_INFO "Hola mundo, somos el grupo 18 y este es el monitor de CPU.\n");
 
     struct proc_dir_entry *entry;
-    entry =  proc_create("cpu_grupo18_datos", 0777, NULL, &proc_fops);
+    entry =  proc_create("cpu_grupo18", 0777, NULL, &proc_fops);
 
     if (!entry) {
         return -1;
@@ -103,7 +112,7 @@ static int __init cpu_grupo18_init(void) {
 
 static void __exit cpu_grupo18_exit(void) {
     printk(KERN_INFO "Sayonara mundo, somos el grupo 18 y este fue el monitor de CPU.\n");
-    remove_proc_entry("cpu_grupo18_datos", NULL);
+    remove_proc_entry("cpu_grupo18", NULL);
 }
 
 
