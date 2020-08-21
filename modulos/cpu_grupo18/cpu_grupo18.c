@@ -23,7 +23,7 @@ static int cpu_g18_main(struct seq_file *m, void *v)
     for_each_process(procesos)
     {
         unsigned long ram = 0;
-        if (!procesos->mm && !procesos->mm->total_vm)
+        if (procesos->mm && procesos->mm->total_vm)
         {
             ram = procesos->mm->total_vm;
         }
