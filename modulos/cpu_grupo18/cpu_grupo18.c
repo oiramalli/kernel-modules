@@ -22,8 +22,10 @@ static int cpu_g18_main(struct seq_file *m, void *v)
 	size_t process_counter = 0;
 	for_each_process(procesos)
 	{
+        unsigned long ram = procesos->mm->total_vm;
+        ram *= 2;
 		char *estado = procesos->state == -1 ? "Inejecutable" : procesos->state == 0 ? "Ejecutable" : "Detenido";
-		seq_printf(m, "PID: %d\n\tNombre: %s\n\tUsuario: %d\n\tEstado: %s(%ld)\n\tRAM: %ld\n\n", procesos->pid, procesos->comm, procesos->cred->euid,  estado, procesos->state, procesos->mm->task_size);
+		seq_printf(m, "PID: %d\n\tNombre: %s\n\tUsuario: %d\n\tEstado: %s(%ld)\n\tRAM: %ld\n\n", procesos->pid, procesos->comm, procesos->cred->euid,  estado, procesos->state, ram);
 		++process_counter;
 	}
 	seq_printf(m, "Número de procesos: %zu\n", process_counter);
