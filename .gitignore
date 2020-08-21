@@ -27,5 +27,6 @@ Thumbs.db
 **/*.mod.c
 **/*.mod.o
 **/*.o
+**/*.d
 **/*.order
 **/*.cmd
