@@ -26,7 +26,7 @@ static int cpu_g18_main(struct seq_file *m, void *v)
     size_t procesos_zombies = 0;
 
     seq_printf(m, "{\n");
-    seq_printf(m, "procs :[\n");
+    seq_printf(m, "\"procs\" :[\n");
     char *coma = "";
     for_each_process(procesos)
     {
