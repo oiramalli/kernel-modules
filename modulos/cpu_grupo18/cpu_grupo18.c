@@ -58,17 +58,17 @@ static int cpu_g18_main(struct seq_file *m, void *v)
             estado = "Detenido";
             ++procesos_detenidos;
         }
-        seq_printf(m, "%s{PID: %d,\nNombre: \"%s\",\nUsuario: %d,\nEstado: \"%s\",\nRAM: %ld\n}", coma, procesos->pid, procesos->comm, procesos->cred->euid, estado, ram);
+        seq_printf(m, "%s{\"PID\": %d,\n\"Nombre\": \"%s\",\n\"Usuario\": %d,\n\"Estado\": \"%s\",\n\"RAM\": %ld\n}", coma, procesos->pid, procesos->comm, procesos->cred->euid, estado, ram);
         coma = ",\n";
         ++total_de_procesos;
     }
 
     seq_printf(m, "],\n");
-    seq_printf(m, "total: %zu,\n", total_de_procesos);
-    seq_printf(m, "ejecucion: %zu,\n", procesos_en_ejecucion); 
-    seq_printf(m, "suspendidos: %zu,\n", procesos_suspendidos);
-    seq_printf(m, "detenidos: %zu,\n", procesos_detenidos); 
-    seq_printf(m, "zombies: %zu,\n", procesos_zombies);
+    seq_printf(m, "\"total\": %zu,\n", total_de_procesos);
+    seq_printf(m, "\"ejecucion\": %zu,\n", procesos_en_ejecucion); 
+    seq_printf(m, "\"suspendidos\": %zu,\n", procesos_suspendidos);
+    seq_printf(m, "\"detenidos\": %zu,\n", procesos_detenidos); 
+    seq_printf(m, "\"zombies\": %zu,\n", procesos_zombies);
     seq_printf(m, "}\n");
     return 0;
 }
