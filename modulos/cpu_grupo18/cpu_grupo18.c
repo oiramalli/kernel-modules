@@ -32,7 +32,6 @@ static int cpu_g18_main(struct seq_file *m, void *v)
     for_each_process(procesos)
     {
         long int ram = procesos->mm && procesos->mm->total_vm ? procesos->mm->total_vm : 0;
-        ram = ram * 4 / 1000; //página 4kb,
         memoria += ram;
         //char *estado = procesos->state == -1 ? "Inejecutable" : procesos->state == 0 ? "Ejecutable" : "Detenido";
         char *estado;
