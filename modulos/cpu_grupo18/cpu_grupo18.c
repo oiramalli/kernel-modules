@@ -36,26 +36,26 @@ static int cpu_g18_main(struct seq_file *m, void *v)
         char *estado;
         if (procesos->state == -1)
         {
-            strcpy(estado,"Inejecutable");
+            estado = "Inejecutable";
         }
         else if (procesos->state == 0)
         {
-            strcpy(estado,"Ejecuntando");
+            estado = "Ejecuntando";
             ++procesos_en_ejecucion;
         }
         else if (procesos->exit_state == 16)
         {
-            strcpy(estado,"Zombie");
+            estado = "Zombie";
             ++procesos_zombies;
         }
         else if (procesos->exit_state == 32)
         {
-            strcpy(estado,"Suspendido");
+            estado = "Suspendido";
             ++procesos_suspendidos;
         }
         else
         {
-            strcpy(estado,"Detenido");
+            estado = "Detenido";
             ++procesos_detenidos;
         }
         seq_printf(m, "PID: %d\n\tNombre: %s\n\tUsuario: %d\n\tEstado: %s\n\tRAM: %ld Mb\n\n", procesos->pid, procesos->comm, procesos->cred->euid, estado, ram);
