@@ -24,6 +24,7 @@ static int cpu_g18_main(struct seq_file *m, void *v)
     size_t procesos_suspendidos = 0;
     size_t procesos_detenidos = 0;
     size_t procesos_zombies = 0;
+    size_t memoria = 0;
 
     seq_printf(m, "{\n");
     seq_printf(m, "\"procs\" :[\n");
@@ -32,6 +33,7 @@ static int cpu_g18_main(struct seq_file *m, void *v)
     {
         long int ram = procesos->mm && procesos->mm->total_vm ? procesos->mm->total_vm : 0;
         ram = ram * 4 / 1000; //página 4kb,
+        memoria += ram;
         //char *estado = procesos->state == -1 ? "Inejecutable" : procesos->state == 0 ? "Ejecutable" : "Detenido";
         char *estado;
         if (procesos->state == -1)
@@ -58,12 +60,13 @@ static int cpu_g18_main(struct seq_file *m, void *v)
             estado = "Detenido";
             ++procesos_detenidos;
         }
-        seq_printf(m, "%s{\"PID\": %d,\n\"Nombre\": \"%s\",\n\"Usuario\": %d,\n\"Estado\": \"%s\",\n\"RAM\": %ld\n}", coma, procesos->pid, procesos->comm, procesos->cred->euid, estado, ram);
+        seq_printf(m, "%s{\"PID\": %d,\n\"Nombre\": \"%s\",\n\"Usuario\": %d,\n\"Estado\": \"%s\",\n\"RAM\": %ld,\n\"Porcentaje\": 0\n}", coma, procesos->pid, procesos->comm, procesos->cred->euid, estado, ram);
         coma = ",\n";
         ++total_de_procesos;
     }
 
     seq_printf(m, "],\n");
+    seq_printf(m, "\"memoria\": %zu,\n", memoria);
     seq_printf(m, "\"total\": %zu,\n", total_de_procesos);
     seq_printf(m, "\"ejecucion\": %zu,\n", procesos_en_ejecucion); 
     seq_printf(m, "\"suspendidos\": %zu,\n", procesos_suspendidos);
