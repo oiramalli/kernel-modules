@@ -68,7 +68,7 @@ static int cpu_g18_main(struct seq_file *m, void *v)
     seq_printf(m, "\"ejecucion\": %zu,\n", procesos_en_ejecucion); 
     seq_printf(m, "\"suspendidos\": %zu,\n", procesos_suspendidos);
     seq_printf(m, "\"detenidos\": %zu,\n", procesos_detenidos); 
-    seq_printf(m, "\"zombies\": %zu,\n", procesos_zombies);
+    seq_printf(m, "\"zombies\": %zu\n", procesos_zombies);
     seq_printf(m, "}\n");
     return 0;
 }
