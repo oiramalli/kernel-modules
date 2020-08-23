@@ -66,11 +66,12 @@ type CPUInfo struct {
 func main() {
 	//direcciones de CPU
 	http.HandleFunc("/procsinfo", procsInfoHandler) //conteo de todos los procesos según estado
-	http.HandleFunc("/memo", memoHandler)
 	http.HandleFunc("/cpu", cpuHandler)
 	http.HandleFunc("/proc", procHandler)
 	http.HandleFunc("/procs", procsHandler)
 	http.HandleFunc("/killproc", killProcHandler)
+	//direcciones de memoria
+	http.HandleFunc("/memo", memoHandler)
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/", fs)
 	log.Println("Listening on :8080...")
