@@ -4,7 +4,7 @@ import { interval, Observable } from 'rxjs';
 import { startWith, switchMap } from "rxjs/operators";
 
 
-const server = '192.168.0.112';
+const server = 'localhost';
 const port = '8080';
 const protocol = 'http';
 
@@ -80,11 +80,11 @@ export class AppComponent {
     ).subscribe(res => {
       for (let key in res) {
         if (res.hasOwnProperty(key)) {
-          if (key === 'Runing') {
+          if (key === 'Running') {
             this.ejecucion = res[key];
           } else if (key === 'Sleeping') {
             this.suspendido = res[key];
-          } else if (key === 'Stoped') {
+          } else if (key === 'Stopped') {
             this.detenido = res[key];
           } else if (key === 'Zombie') {
             this.zombie = res[key];

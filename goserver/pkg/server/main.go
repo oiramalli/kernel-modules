@@ -66,9 +66,9 @@ type CPUInfo struct {
 func main() {
 	//direcciones de CPU
 	http.HandleFunc("/procsinfo", procsInfoHandler) //conteo de todos los procesos según estado
-	http.HandleFunc("/cpu", cpuHandler)
+	http.HandleFunc("/procs", procsHandler)         //lista de procesos
 	http.HandleFunc("/proc", procHandler)
-	http.HandleFunc("/procs", procsHandler)
+	http.HandleFunc("/cpu", cpuHandler)
 	http.HandleFunc("/killproc", killProcHandler)
 	//direcciones de memoria
 	http.HandleFunc("/memo", memoHandler)
@@ -112,10 +112,9 @@ func killProcHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
-/*
 var gettingProcsInfo bool = false
 var cachedProcsInfo []ProcInfo
-*/
+
 func procsInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	var cpu cpuDatos
@@ -174,15 +173,20 @@ func procsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var procs []ProcInfo
 	var err error
-	/*
-		if gettingProcsInfo {
-			procs = cachedProcsInfo
-			err = nil
-		} else {
-			procs, err = GetProcsInfo()
-			cachedProcsInfo = procs
+
+	if gettingProcsInfo {
+		procs = cachedProcsInfo
+		err = nil
+	} else {
+		var cpu cpuDatos
+		cpu, err = GetcpuDatos()
+		for _, p := range cpu.Procs {
+			p.PorcentajeMemoriaUtilizada = float64(p.MemoriaUtilizada) / float64(cpu.Memoria)
+			procs = append(procs, p)
 		}
-	*/
+		cachedProcsInfo = procs
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
