@@ -57,6 +57,13 @@ type MemoInfo struct {
 	UsedMb      float64
 }
 
+//MemoDatos representa los datos del modulo
+type MemoDatos struct {
+	TotalKb     uint64
+	AvailableKb uint64
+	UsedKb      uint64
+}
+
 //CPUInfo Representa el estado de la CPU
 type CPUInfo struct {
 	Used float64
@@ -227,14 +234,13 @@ func procHandler(w http.ResponseWriter, r *http.Request) {
 func memoHandler(w http.ResponseWriter, r *http.Request) {
 
 	var memoInfo MemoInfo
-	err := GetMemInfo(&memoInfo)
+	memoInfo, err := GetMemInfo()
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	memoInfo.UsedKb = memoInfo.TotalKb - memoInfo.AvailableKb
 	memoInfo.AvailableMb = float64(memoInfo.AvailableKb) / 1000
 	memoInfo.TotalMb = float64(memoInfo.TotalKb) / 1000
 	memoInfo.UsedMb = memoInfo.TotalMb - memoInfo.AvailableMb
@@ -299,46 +305,65 @@ func getCPUSample() (idle, total uint64) {
 }
 
 //GetMemInfo obtiene el estado de la memoria RAM
-func GetMemInfo(m *MemoInfo) error {
+func GetMemInfo() (MemoInfo, error) {
 	var err error
-
-	path := filepath.Join("/proc/meminfo")
-	file, err := os.Open(path)
+	var mem MemoDatos
+	var m MemoInfo
+	mem, err = GetMemDatos()
+	//fmt.Println(mem)
 	if err != nil {
-		return err
+		return MemoInfo{}, err
 	}
-	defer file.Close()
+	m.AvailableKb = mem.AvailableKb
+	m.TotalKb = mem.TotalKb
+	m.UsedKb = mem.UsedKb
+	/*
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			text := scanner.Text()
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		text := scanner.Text()
+			n := strings.Index(text, ":")
+			if n == -1 {
+				continue
+			}
 
-		n := strings.Index(text, ":")
-		if n == -1 {
-			continue
-		}
+			key := text[:n] // metric
+			data := strings.Split(strings.Trim(text[(n+1):], " "), " ")
+			if len(data) == 2 {
+				if data[1] == "kB" {
+					value, err := strconv.ParseUint(data[0], 10, 64)
+					if err != nil {
+						continue
+					}
 
-		key := text[:n] // metric
-		data := strings.Split(strings.Trim(text[(n+1):], " "), " ")
-		if len(data) == 2 {
-			if data[1] == "kB" {
-				value, err := strconv.ParseUint(data[0], 10, 64)
-				if err != nil {
-					continue
-				}
-
-				if key == "MemTotal" {
-					m.TotalKb = value
-				} else if key == "MemAvailable" {
-					m.AvailableKb = value
+					if key == "MemTotal" {
+						m.TotalKb = value
+					} else if key == "MemAvailable" {
+						m.AvailableKb = value
+					}
 				}
 			}
-		}
 
+		}
+	*/
+	return m, err
+
+}
+
+//GetMemDatos retorna el json de mem_grupo18
+func GetMemDatos() (MemoDatos, error) {
+	path := "/proc/mem_grupo18"
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		return MemoDatos{}, err
 	}
 
-	return nil
-
+	var mem MemoDatos
+	err = json.Unmarshal([]byte(file), &mem)
+	if err != nil {
+		return MemoDatos{}, err
+	}
+	return mem, nil
 }
 
 //GetcpuDatos retorna el json de cpu_grupo18
@@ -361,7 +386,7 @@ func GetProcsInfo() ([]ProcInfo, error) {
 	//gettingProcsInfo = true
 	//información del estado de la memoria
 	var memoInfo MemoInfo
-	err := GetMemInfo(&memoInfo)
+	memoInfo, err := GetMemInfo()
 
 	if err != nil {
 		//gettingProcsInfo = false

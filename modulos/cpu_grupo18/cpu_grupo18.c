@@ -170,5 +170,5 @@ module_exit(cpu_grupo18_exit);
 
 MODULE_LICENSE("MIT");
 MODULE_AUTHOR("Grupo 18");
-MODULE_DESCRIPTION("Un monitor de CPU sencillo.");
+MODULE_DESCRIPTION("[SO2] Modulo de cpu");
 MODULE_VERSION("0.01");
