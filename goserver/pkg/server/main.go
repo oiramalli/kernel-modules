@@ -25,7 +25,7 @@ type ProcInfo struct {
 	PorcentajeMemoriaUtilizada float64
 }
 
-//json escrito en el modulo de cpu_grupo18
+//cpuDatos json escrito en el modulo de cpu_grupo18
 type cpuDatos struct {
 	procs       []ProcInfo
 	memoria     int
@@ -172,14 +172,15 @@ func procsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var procs []ProcInfo
 	var err error
-	if gettingProcsInfo {
-		procs = cachedProcsInfo
-		err = nil
-	} else {
-		procs, err = GetProcsInfo()
-		cachedProcsInfo = procs
-	}
-
+	/*
+		if gettingProcsInfo {
+			procs = cachedProcsInfo
+			err = nil
+		} else {
+			procs, err = GetProcsInfo()
+			cachedProcsInfo = procs
+		}
+	*/
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -340,12 +341,12 @@ func GetcpuDatos() (cpuDatos, error) {
 	var err error
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return cpuDatos{}, err
 	}
 	var cpu cpuDatos
 	err2 := json.Unmarshal(file, &cpu)
 	if err2 != nil {
-		return nil, err2
+		return cpuDatos{}, err2
 	}
 	return cpu, nil
 
@@ -353,13 +354,13 @@ func GetcpuDatos() (cpuDatos, error) {
 
 //GetProcsInfo obtiene el estado de los procesos del SO
 func GetProcsInfo() ([]ProcInfo, error) {
-	gettingProcsInfo = true
+	//gettingProcsInfo = true
 	//información del estado de la memoria
 	var memoInfo MemoInfo
 	err := GetMemInfo(&memoInfo)
 
 	if err != nil {
-		gettingProcsInfo = false
+		//gettingProcsInfo = false
 		return nil, err
 	}
 
@@ -375,7 +376,7 @@ func GetProcsInfo() ([]ProcInfo, error) {
 	outputDirFiles, err := outputDirRead.Readdir(0)
 
 	if err != nil {
-		gettingProcsInfo = false
+		//gettingProcsInfo = false
 		return nil, err
 	}
 
@@ -397,7 +398,7 @@ func GetProcsInfo() ([]ProcInfo, error) {
 			}
 		}
 	}
-	gettingProcsInfo = false
+	//gettingProcsInfo = false
 	return procs, nil
 }
 
@@ -438,7 +439,7 @@ func GetProcInfo(p *ProcInfo, pid int) error {
 
 		} else if key == "State" {
 			data := strings.Split(strings.TrimSpace(text[(n+1):]), " ")
-			p.EstadoID = data[0]
+			//p.EstadoID = data[0]
 			p.Estado = data[1]
 
 		} else if key == "VmRSS" {
@@ -454,8 +455,8 @@ func GetProcInfo(p *ProcInfo, pid int) error {
 
 	}
 
-	out, err := exec.Command("ps", "-o", "user=", "-p", strconv.Itoa(pid)).Output()
-	p.Usuario = strings.TrimSpace(string(out))
+	//out, err := exec.Command("ps", "-o", "user=", "-p", strconv.Itoa(pid)).Output()
+	//p.Usuario = strings.TrimSpace(string(out))
 
 	return nil
 
