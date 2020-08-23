@@ -59,7 +59,7 @@ static int cpu_g18_main(struct seq_file *m, void *v)
             estado = "Detenido";
             ++procesos_detenidos;
         }
-        seq_printf(m, "%s{\"PID\": %d,\n\"Nombre\": \"%s\",\n\"Usuario\": %d,\n\"Estado\": \"%s\",\n\"RAM\": %ld,\n\"Porcentaje\": 0\n}", coma, procesos->pid, procesos->comm, procesos->cred->euid, estado, ram);
+        seq_printf(m, "%s{\"Pid\": %d,\n\"Nombre\": \"%s\",\n\"Usuario\": %d,\n\"Estado\": \"%s\",\n\"MemoriaUtilizada\": %ld,\n\"PorcentajeMemoriaUtilizada\": 0.0\n}", coma, procesos->pid, procesos->comm, procesos->cred->euid, estado, ram);
         coma = ",\n";
         ++total_de_procesos;
     }

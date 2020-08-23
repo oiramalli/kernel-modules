@@ -21,19 +21,19 @@ type ProcInfo struct {
 	Nombre                     string
 	Usuario                    int
 	Estado                     string
-	MemoriaUtilizada           uint64
+	MemoriaUtilizada           int
 	PorcentajeMemoriaUtilizada float64
 }
 
 //cpuDatos json escrito en el modulo de cpu_grupo18
 type cpuDatos struct {
-	procs       []ProcInfo
-	memoria     int
-	total       int
-	ejecucion   int
-	suspendidos int
-	detenidos   int
-	zombies     int
+	Procs       []ProcInfo
+	Memoria     int
+	Total       int
+	Ejecucion   int
+	Suspendidos int
+	Detenidos   int
+	Zombies     int
 }
 
 //ProcsInfo representa la sumatoria de procesos del so por estado
@@ -116,6 +116,7 @@ var gettingProcsInfo bool = false
 var cachedProcsInfo []ProcInfo
 */
 func procsInfoHandler(w http.ResponseWriter, r *http.Request) {
+
 	var cpu cpuDatos
 	//var procs []ProcInfo
 	var err error
@@ -135,11 +136,11 @@ func procsInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	var procsInfo ProcsInfo
 	procsInfo.Other = 0
-	procsInfo.Running = cpu.ejecucion
-	procsInfo.Sleeping = cpu.suspendidos
-	procsInfo.Stopped = cpu.detenidos
-	procsInfo.Total = cpu.total
-	procsInfo.Zombie = cpu.zombies
+	procsInfo.Running = cpu.Ejecucion
+	procsInfo.Sleeping = cpu.Suspendidos
+	procsInfo.Stopped = cpu.Detenidos
+	procsInfo.Total = cpu.Total
+	procsInfo.Zombie = cpu.Zombies
 	/*
 		for _, proc := range procs {
 			procsInfo.Total++
@@ -338,18 +339,16 @@ func GetMemInfo(m *MemoInfo) error {
 //GetcpuDatos retorna el json de cpu_grupo18
 func GetcpuDatos() (cpuDatos, error) {
 	path := "/proc/cpu_grupo18"
-	var err error
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
 		return cpuDatos{}, err
 	}
 	var cpu cpuDatos
-	err2 := json.Unmarshal(file, &cpu)
-	if err2 != nil {
-		return cpuDatos{}, err2
+	err = json.Unmarshal([]byte(file), &cpu)
+	if err != nil {
+		return cpuDatos{}, err
 	}
 	return cpu, nil
-
 }
 
 //GetProcsInfo obtiene el estado de los procesos del SO
@@ -450,7 +449,7 @@ func GetProcInfo(p *ProcInfo, pid int) error {
 				return nil
 			}
 
-			p.MemoriaUtilizada = value
+			p.MemoriaUtilizada = int(value)
 		}
 
 	}
