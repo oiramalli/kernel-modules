@@ -41,7 +41,7 @@ static int cpu_g18_main(struct seq_file *m, void *v)
         }
         else if (procesos->state == 0)
         {
-            estado = "Ejecuntando";
+            estado = "Ejecutando";
             ++procesos_en_ejecucion;
         }
         else if (procesos->exit_state == 16)
