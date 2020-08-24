@@ -41,6 +41,7 @@ export class AppComponent {
     return {
       expandable: !!node.hijos && node.hijos.length > 0,
       nombre: node.nombre,
+      id: node.id,
       level: level,
     };
   }
@@ -101,7 +102,7 @@ export class AppComponent {
       this.cpuUsed = res['Used'];
     });
 
-    interval(1500).pipe(
+    interval(10500).pipe(
       startWith(0),
       switchMap(() => this.getArbol())
     ).subscribe(res => {
