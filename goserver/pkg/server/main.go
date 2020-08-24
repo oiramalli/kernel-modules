@@ -15,6 +15,13 @@ import (
 	"time"
 )
 
+//ArbolInfo representa el arbol de procesos
+type ArbolInfo struct {
+	id     int
+	nombre string
+	hijos  []ArbolInfo
+}
+
 //ProcInfo Representa el estado de un proceso del so
 type ProcInfo struct {
 	Pid                        int
@@ -72,6 +79,7 @@ type CPUInfo struct {
 //función main
 func main() {
 	//direcciones de CPU
+	http.HandleFunc("/arbol", arbolHandler)
 	http.HandleFunc("/procsinfo", procsInfoHandler) //conteo de todos los procesos según estado
 	http.HandleFunc("/procs", procsHandler)         //lista de procesos
 	http.HandleFunc("/proc", procHandler)
@@ -229,6 +237,31 @@ func procHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
+}
+
+func arbolHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
+	path := "/proc/cpu_arbol_grupo18"
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	/*
+		var arbolDatos ArbolInfo
+		err = json.Unmarshal([]byte(file), &arbolDatos)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		js, err := json.Marshal(arbolDatos)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	*/
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(file)
 }
 
 func memoHandler(w http.ResponseWriter, r *http.Request) {
