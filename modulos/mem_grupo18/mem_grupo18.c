@@ -20,12 +20,12 @@ static int mem_g18_main(struct seq_file *m, void *v) {
 
 	//se rellenan las variables
 	factorBytes = info.mem_unit;
-	total_ram = info.totalram * factorBytes;
-	free_ram = info.freeram * factorBytes;
-	used_ram = ((total_ram - free_ram)* 100)/total_ram ;
+	total_ram = info.totalram * factorBytes /1000;
+	free_ram = info.freeram * factorBytes / 1000;
+	used_ram = total_ram - free_ram;
 
 	//se escribe el archivo
-	seq_printf(m, "Cantidad total de memoria: %ld bytes\nCantidad de memoria disponible: %ld bytes\nMemoria utilizada: %d por ciento\n", total_ram, free_ram, used_ram);
+	seq_printf(m, "{\n\"TotalKb\": %ld,\n\"AvailableKb\": %ld,\n\"UsedKb\": %d\n}\n", total_ram, free_ram, used_ram);
 	return 0;
 }
 
@@ -42,27 +42,28 @@ static struct file_operations memo_proc_fops = {
      .release = single_release,
 };
 
-static int memo_init(void){
+static int memoria_grupo18_init(void){
 	//Mostrar carnets
 	printk(KERN_ALERT "Hola mundo, somos el grupo 18 y este es el monitor de memoria.\n");
 	
 	//Create proc file	
-	proc_create("mem_grupo18", 0, NULL, &memo_proc_fops);
+	proc_create("mem_grupo18", 0777, NULL, &memo_proc_fops);
 
 	return 0;
 }
 
-static void memo_exit(void){
+static void memoria_grupo18_exit(void){
 	//Remover proc entry
 	remove_proc_entry("mem_grupo18", NULL);
 	//Mostrar nombre del curso
 	printk(KERN_ALERT "Sayonara mundo, somos el grupo 18 y este fue el monitor de memoria.\n");
 }
 
-module_init(memo_init);
-module_exit(memo_exit);
+module_init(memoria_grupo18_init);
+module_exit(memoria_grupo18_exit);
 
 //-------------- metadata -------------------------
-MODULE_AUTHOR("Mario Alvarado");
+MODULE_LICENSE("MIT");
+MODULE_AUTHOR("Grupo 18");
 MODULE_DESCRIPTION("[SO2] Modulo de memoria");
 MODULE_LICENSE("GPL");

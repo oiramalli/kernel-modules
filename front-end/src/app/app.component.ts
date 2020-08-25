@@ -1,10 +1,17 @@
+import {FlatTreeControl} from '@angular/cdk/tree';
 import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { interval, Observable } from 'rxjs';
 import { startWith, switchMap } from "rxjs/operators";
+import {MatTreeFlatDataSource, MatTreeFlattener} from '@angular/material/tree';
 
+interface FoodNode {
+  id: number;
+  nombre: string;
+  hijos?: FoodNode[];
+}
 
-const server = '192.168.0.112';
+const server = 'localhost';
 const port = '8080';
 const protocol = 'http';
 
@@ -17,17 +24,44 @@ const config = {
   }
 }
 
+interface ExampleFlatNode {
+  expandable: boolean;
+  nombre: string;
+  id: number;
+  level: number;
+}
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
+  private _transformer = (node: FoodNode, level: number) => {
+    return {
+      expandable: !!node.hijos && node.hijos.length > 0,
+      nombre: node.nombre,
+      id: node.id,
+      level: level,
+    };
+  }
+
+  treeControl = new FlatTreeControl<ExampleFlatNode>(
+      node => node.level, node => node.expandable);
+
+  treeFlattener = new MatTreeFlattener(
+      this._transformer, node => node.level, node => node.expandable, node => node.hijos);
+
+  dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
+
+  
+
   urlProcs = config.prod.base + 'procs';
   urlCPU = config.prod.base + 'cpu';
   urlMEMO = config.prod.base + 'memo';
   urlProcsInfo = config.prod.base + 'procsinfo';
   urlKill = config.prod.base + 'killproc';
+  urlArbol = config.prod.base + 'arbol';
 
 
   procesos: string[] = [];
@@ -40,11 +74,13 @@ export class AppComponent {
   kill: number = 0;
 
   cpuUsed: number = 0;
+  arbol: FoodNode[];
 
   cpuMemoTotalMb: number = 0;
   cpuMemoUsedMb: number = 0;
 
   constructor(private http: HttpClient) {
+    
     interval(1000).pipe(
       startWith(0),
       switchMap(() => this.getProcs())
@@ -66,6 +102,14 @@ export class AppComponent {
       this.cpuUsed = res['Used'];
     });
 
+    interval(10500).pipe(
+      startWith(0),
+      switchMap(() => this.getArbol())
+    ).subscribe(res => {
+      this.arbol = res;
+      this.dataSource.data = this.arbol;
+    });
+
     interval(1000).pipe(
       startWith(0),
       switchMap(() => this.getMemo())
@@ -80,11 +124,11 @@ export class AppComponent {
     ).subscribe(res => {
       for (let key in res) {
         if (res.hasOwnProperty(key)) {
-          if (key === 'Runing') {
+          if (key === 'Running') {
             this.ejecucion = res[key];
           } else if (key === 'Sleeping') {
             this.suspendido = res[key];
-          } else if (key === 'Stoped') {
+          } else if (key === 'Stopped') {
             this.detenido = res[key];
           } else if (key === 'Zombie') {
             this.zombie = res[key];
@@ -96,6 +140,10 @@ export class AppComponent {
         }
       }
     });
+  }
+
+  getArbol(): Observable<any> {
+    return this.http.get(this.urlArbol);
   }
 
   getProcs(): Observable<any> {
@@ -120,4 +168,5 @@ export class AppComponent {
     this.http.get(this.urlKill + `?pid=${pid}`).subscribe();
   }
 
+  hasChild = (_: number, node: ExampleFlatNode) => node.expandable;
 }

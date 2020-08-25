@@ -15,25 +15,42 @@ import (
 	"time"
 )
 
-//ProcsInfo representa la sumatoria de procesos del so por estado
-type ProcsInfo struct {
-	Runing   int
-	Sleeping int
-	Stoped   int
-	Zombie   int
-	Other    int
-	Total    int
+//ArbolInfo representa el arbol de procesos
+type ArbolInfo struct {
+	id     int
+	nombre string
+	hijos  []ArbolInfo
 }
 
 //ProcInfo Representa el estado de un proceso del so
 type ProcInfo struct {
-	Pid                       int
-	Nombre                    string
-	Usuario                   string
-	EstadoID                  string
-	Estado                    string
-	MemoriaUtiliada           uint64
-	PorcentajeMemoriaUtiliada float64
+	Pid                        int
+	Nombre                     string
+	Usuario                    int
+	Estado                     string
+	MemoriaUtilizada           int
+	PorcentajeMemoriaUtilizada float64
+}
+
+//cpuDatos json escrito en el modulo de cpu_grupo18
+type cpuDatos struct {
+	Procs       []ProcInfo
+	Memoria     int
+	Total       int
+	Ejecucion   int
+	Suspendidos int
+	Detenidos   int
+	Zombies     int
+}
+
+//ProcsInfo representa la sumatoria de procesos del so por estado
+type ProcsInfo struct {
+	Running  int
+	Sleeping int
+	Stopped  int
+	Zombie   int
+	Other    int
+	Total    int
 }
 
 //MemoInfo Representa el estado de la memoria RAM
@@ -47,6 +64,13 @@ type MemoInfo struct {
 	UsedMb      float64
 }
 
+//MemoDatos representa los datos del modulo
+type MemoDatos struct {
+	TotalKb     uint64
+	AvailableKb uint64
+	UsedKb      uint64
+}
+
 //CPUInfo Representa el estado de la CPU
 type CPUInfo struct {
 	Used float64
@@ -54,12 +78,15 @@ type CPUInfo struct {
 
 //función main
 func main() {
-	http.HandleFunc("/memo", memoHandler)
-	http.HandleFunc("/cpu", cpuHandler)
+	//direcciones de CPU
+	http.HandleFunc("/arbol", arbolHandler)
+	http.HandleFunc("/procsinfo", procsInfoHandler) //conteo de todos los procesos según estado
+	http.HandleFunc("/procs", procsHandler)         //lista de procesos
 	http.HandleFunc("/proc", procHandler)
-	http.HandleFunc("/procs", procsHandler)
-	http.HandleFunc("/procsinfo", procsInfoHandler)
+	http.HandleFunc("/cpu", cpuHandler)
 	http.HandleFunc("/killproc", killProcHandler)
+	//direcciones de memoria
+	http.HandleFunc("/memo", memoHandler)
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/", fs)
 	log.Println("Listening on :8080...")
@@ -104,40 +131,49 @@ var gettingProcsInfo bool = false
 var cachedProcsInfo []ProcInfo
 
 func procsInfoHandler(w http.ResponseWriter, r *http.Request) {
-	var procs []ProcInfo
+
+	var cpu cpuDatos
+	//var procs []ProcInfo
 	var err error
-	if gettingProcsInfo {
+	/*if gettingProcsInfo {
 		procs = cachedProcsInfo
 		err = nil
 	} else {
 		procs, err = GetProcsInfo()
 		cachedProcsInfo = procs
-	}
-
+	}*/
+	cpu, err = GetcpuDatos()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	//voy por aqui de esta función
 
 	var procsInfo ProcsInfo
+	procsInfo.Other = 0
+	procsInfo.Running = cpu.Ejecucion
+	procsInfo.Sleeping = cpu.Suspendidos
+	procsInfo.Stopped = cpu.Detenidos
+	procsInfo.Total = cpu.Total
+	procsInfo.Zombie = cpu.Zombies
+	/*
+		for _, proc := range procs {
+			procsInfo.Total++
 
-	for _, proc := range procs {
-		procsInfo.Total++
-
-		switch proc.EstadoID {
-		case "R":
-			procsInfo.Runing++
-		case "S":
-			procsInfo.Sleeping++
-		case "Z":
-			procsInfo.Zombie++
-		case "T":
-			procsInfo.Stoped++
-		default:
-			procsInfo.Other++
+			switch proc.EstadoID {
+			case "R":
+				procsInfo.Running++
+			case "S":
+				procsInfo.Sleeping++
+			case "Z":
+				procsInfo.Zombie++
+			case "T":
+				procsInfo.Stopped++
+			default:
+				procsInfo.Other++
+			}
 		}
-	}
-
+	*/
 	js, err := json.Marshal(procsInfo)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -152,11 +188,17 @@ func procsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var procs []ProcInfo
 	var err error
+
 	if gettingProcsInfo {
 		procs = cachedProcsInfo
 		err = nil
 	} else {
-		procs, err = GetProcsInfo()
+		var cpu cpuDatos
+		cpu, err = GetcpuDatos()
+		for _, p := range cpu.Procs {
+			p.PorcentajeMemoriaUtilizada = float64(p.MemoriaUtilizada) / float64(cpu.Memoria)
+			procs = append(procs, p)
+		}
 		cachedProcsInfo = procs
 	}
 
@@ -197,17 +239,41 @@ func procHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
+func arbolHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
+	path := "/proc/cpu_arbol_grupo18"
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	/*
+		var arbolDatos ArbolInfo
+		err = json.Unmarshal([]byte(file), &arbolDatos)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		js, err := json.Marshal(arbolDatos)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	*/
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(file)
+}
+
 func memoHandler(w http.ResponseWriter, r *http.Request) {
 
 	var memoInfo MemoInfo
-	err := GetMemInfo(&memoInfo)
+	memoInfo, err := GetMemInfo()
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	memoInfo.UsedKb = memoInfo.TotalKb - memoInfo.AvailableKb
 	memoInfo.AvailableMb = float64(memoInfo.AvailableKb) / 1000
 	memoInfo.TotalMb = float64(memoInfo.TotalKb) / 1000
 	memoInfo.UsedMb = memoInfo.TotalMb - memoInfo.AvailableMb
@@ -272,57 +338,91 @@ func getCPUSample() (idle, total uint64) {
 }
 
 //GetMemInfo obtiene el estado de la memoria RAM
-func GetMemInfo(m *MemoInfo) error {
+func GetMemInfo() (MemoInfo, error) {
 	var err error
-
-	path := filepath.Join("/proc/meminfo")
-	file, err := os.Open(path)
+	var mem MemoDatos
+	var m MemoInfo
+	mem, err = GetMemDatos()
+	//fmt.Println(mem)
 	if err != nil {
-		return err
+		return MemoInfo{}, err
 	}
-	defer file.Close()
+	m.AvailableKb = mem.AvailableKb
+	m.TotalKb = mem.TotalKb
+	m.UsedKb = mem.UsedKb
+	/*
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			text := scanner.Text()
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		text := scanner.Text()
+			n := strings.Index(text, ":")
+			if n == -1 {
+				continue
+			}
 
-		n := strings.Index(text, ":")
-		if n == -1 {
-			continue
-		}
+			key := text[:n] // metric
+			data := strings.Split(strings.Trim(text[(n+1):], " "), " ")
+			if len(data) == 2 {
+				if data[1] == "kB" {
+					value, err := strconv.ParseUint(data[0], 10, 64)
+					if err != nil {
+						continue
+					}
 
-		key := text[:n] // metric
-		data := strings.Split(strings.Trim(text[(n+1):], " "), " ")
-		if len(data) == 2 {
-			if data[1] == "kB" {
-				value, err := strconv.ParseUint(data[0], 10, 64)
-				if err != nil {
-					continue
-				}
-
-				if key == "MemTotal" {
-					m.TotalKb = value
-				} else if key == "MemAvailable" {
-					m.AvailableKb = value
+					if key == "MemTotal" {
+						m.TotalKb = value
+					} else if key == "MemAvailable" {
+						m.AvailableKb = value
+					}
 				}
 			}
-		}
 
+		}
+	*/
+	return m, err
+
+}
+
+//GetMemDatos retorna el json de mem_grupo18
+func GetMemDatos() (MemoDatos, error) {
+	path := "/proc/mem_grupo18"
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		return MemoDatos{}, err
 	}
 
-	return nil
+	var mem MemoDatos
+	err = json.Unmarshal([]byte(file), &mem)
+	if err != nil {
+		return MemoDatos{}, err
+	}
+	return mem, nil
+}
 
+//GetcpuDatos retorna el json de cpu_grupo18
+func GetcpuDatos() (cpuDatos, error) {
+	path := "/proc/cpu_grupo18"
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		return cpuDatos{}, err
+	}
+	var cpu cpuDatos
+	err = json.Unmarshal([]byte(file), &cpu)
+	if err != nil {
+		return cpuDatos{}, err
+	}
+	return cpu, nil
 }
 
 //GetProcsInfo obtiene el estado de los procesos del SO
 func GetProcsInfo() ([]ProcInfo, error) {
-	gettingProcsInfo = true
+	//gettingProcsInfo = true
 	//información del estado de la memoria
 	var memoInfo MemoInfo
-	err := GetMemInfo(&memoInfo)
+	memoInfo, err := GetMemInfo()
 
 	if err != nil {
-		gettingProcsInfo = false
+		//gettingProcsInfo = false
 		return nil, err
 	}
 
@@ -338,7 +438,7 @@ func GetProcsInfo() ([]ProcInfo, error) {
 	outputDirFiles, err := outputDirRead.Readdir(0)
 
 	if err != nil {
-		gettingProcsInfo = false
+		//gettingProcsInfo = false
 		return nil, err
 	}
 
@@ -354,13 +454,13 @@ func GetProcsInfo() ([]ProcInfo, error) {
 				errGet := GetProcInfo(&proc, pid)
 
 				if errGet == nil {
-					proc.PorcentajeMemoriaUtiliada = float64(proc.MemoriaUtiliada) / float64(memoInfo.AvailableKb)
+					proc.PorcentajeMemoriaUtilizada = float64(proc.MemoriaUtilizada) / float64(memoInfo.AvailableKb)
 					procs = append(procs, proc)
 				}
 			}
 		}
 	}
-	gettingProcsInfo = false
+	//gettingProcsInfo = false
 	return procs, nil
 }
 
@@ -371,7 +471,7 @@ type ProcInfo struct {
 	Usuario         string
 	EstadoID        string
 	Estado          string
-	MemoriaUtiliada uint64
+	MemoriaUtilizada uint64
 }
 */
 
@@ -401,7 +501,7 @@ func GetProcInfo(p *ProcInfo, pid int) error {
 
 		} else if key == "State" {
 			data := strings.Split(strings.TrimSpace(text[(n+1):]), " ")
-			p.EstadoID = data[0]
+			//p.EstadoID = data[0]
 			p.Estado = data[1]
 
 		} else if key == "VmRSS" {
@@ -412,13 +512,13 @@ func GetProcInfo(p *ProcInfo, pid int) error {
 				return nil
 			}
 
-			p.MemoriaUtiliada = value
+			p.MemoriaUtilizada = int(value)
 		}
 
 	}
 
-	out, err := exec.Command("ps", "-o", "user=", "-p", strconv.Itoa(pid)).Output()
-	p.Usuario = strings.TrimSpace(string(out))
+	//out, err := exec.Command("ps", "-o", "user=", "-p", strconv.Itoa(pid)).Output()
+	//p.Usuario = strings.TrimSpace(string(out))
 
 	return nil
 

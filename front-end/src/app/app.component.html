@@ -298,7 +298,7 @@
     alt="Angular Logo"
     src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg=="
   />
-  <span>Proyecto 1</span>
+  <span>Practica 1 Grupo 18</span>
 </div>
 
 <div class="content" role="main">
@@ -367,40 +367,6 @@
 
   <!-- Procesos -->
   <h2>Procesos</h2>
-  <h3>Procesos que están siendo ejecutados en el servidor</h3>
-  <table id="customers">
-    <thead>
-      <tr>
-        <th>no.</th>
-        <th>Estado</th>
-        <th>EstadoId</th>
-        <th>Memoria Utilizada</th>
-        <th>Nombre</th>
-        <th>Pid</th>
-        <th>Porcentaje de Memoria Utilizada</th>
-        <th>Usuario</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let proceso of procesos; index as i">
-        <td>{{ i + 1 }}</td>
-        <td>{{ proceso.Estado }}</td>
-        <td>{{ proceso.EstadoID }}</td>
-        <td>{{ proceso.MemoriaUtilizada }}</td>
-        <td>{{ proceso.Nombre }}</td>
-        <td>{{ proceso.Pid }}</td>
-        <td>{{ proceso.PorcentajeMemoriaUtiliada*100 }} %</td>
-        <td>{{ proceso.Usuario }}</td>
-        <td>
-          <button id="{{proceso.Pid}}" type="button" class="btn btn-primary btn-lg btn-block" (click)="onClickKill($event)">
-            KILL
-          </button>
-        </td>
-
-      </tr>
-    </tbody>
-  </table>
   <h3>Resumen general de procesos</h3>
   <table id="customers">
     <thead>
@@ -424,8 +390,37 @@
       </tr>
     </tbody>
   </table>
+  <h3>Procesos que están siendo ejecutados en el servidor</h3>
+  <table id="customers">
+    <thead>
+      <tr>
+        <th>no.</th>
+        <th>Estado</th>
+        <th>Nombre</th>
+        <th>Pid</th>
+        <th>Porcentaje de Memoria Utilizada</th>
+        <th>Usuario</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let proceso of procesos; index as i">
+        <td>{{ i + 1 }}</td>
+        <td>{{ proceso.Estado }}</td>
+        <td>{{ proceso.Nombre }}</td>
+        <td>{{ proceso.Pid }}</td>
+        <td>{{ proceso.PorcentajeMemoriaUtilizada*100 }} %</td>
+        <td>{{ proceso.Usuario }}</td>
+        <td>
+          <button id="{{proceso.Pid}}" type="button" class="btn btn-primary btn-lg btn-block" (click)="onClickKill($event)">
+            KILL
+          </button>
+        </td>
 
-
+      </tr>
+    </tbody>
+  </table>
+ 
   <!-- Monitores -->
   <h2>Monitores</h2>
 
@@ -498,6 +493,27 @@
       </table>
     </pre>
   </div>
+
+   <!-- arbol -->
+   <h2>Arbol</h2>
+   <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+     <!-- This is the tree node template for leaf nodes -->
+     <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+       <!-- use a disabled button to provide padding for tree leaf -->
+       <button mat-icon-button disabled></button>
+       {{node.nombre}} - {{node.id}}
+     </mat-tree-node>
+     <!-- This is the tree node template for expandable nodes -->
+     <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding>
+       <button mat-icon-button matTreeNodeToggle
+               [attr.aria-label]="'toggle ' + node.nombre">
+         <mat-icon class="mat-icon-rtl-mirror">
+           {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+         </mat-icon>
+       </button>
+       {{node.nombre}} - {{node.id}}
+     </mat-tree-node>
+   </mat-tree>
 
   <svg
     id="clouds"
